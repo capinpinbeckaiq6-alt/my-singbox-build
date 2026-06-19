@@ -26,11 +26,18 @@ jobs:
 
       - name: Build Android AAR
         run: |
-          make lib_install
-          make lib_android
+          # 1. 强制设置安卓底层编译环境
+          export ANDROID_NDK_HOME=$ANDROID_NDK_LATEST_HOME
+          
+          # 2. 安装 gomobile 编译器
+          go install golang.org/x/mobile/cmd/gomobile@latest
+          gomobile init
+          
+          # 3. 绕过检测，直接暴力强编 (加上了免检测 tag)
+          gomobile bind -v -o libbox.aar -target android -androidapi 21 -javapkg=io.nekohasekai -libname=box -tags with_quic,with_wireguard,with_utls,with_clash_api,badlinkname ./experimental/libbox
 
       - name: Upload AAR Artifact
         uses: actions/upload-artifact@v4
         with:
           name: libbox-aar
-          path: ./*.aar
+          path: ./libbox.aar
