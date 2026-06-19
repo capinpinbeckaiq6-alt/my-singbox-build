@@ -11,6 +11,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: 'SagerNet/sing-box'
+          ref: 'v1.9.3'   # 核心秘诀：强制使用 v1.9.3 稳定版！绝不使用报错的测试版
           fetch-depth: 1
 
       - name: Setup Go
@@ -26,18 +27,11 @@ jobs:
 
       - name: Build Android AAR
         run: |
-          # 1. 强制设置安卓底层编译环境
-          export ANDROID_NDK_HOME=$ANDROID_NDK_LATEST_HOME
-          
-          # 2. 安装 gomobile 编译器
-          go install golang.org/x/mobile/cmd/gomobile@latest
-          gomobile init
-          
-          # 3. 绕过检测，直接暴力强编 (加上了免检测 tag)
-          gomobile bind -v -o libbox.aar -target android -androidapi 21 -javapkg=io.nekohasekai -libname=box -tags with_quic,with_wireguard,with_utls,with_clash_api,badlinkname ./experimental/libbox
+          make lib_install
+          make lib_android
 
       - name: Upload AAR Artifact
         uses: actions/upload-artifact@v4
         with:
           name: libbox-aar
-          path: ./libbox.aar
+          path: ./*.aar
