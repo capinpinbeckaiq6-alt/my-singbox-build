@@ -11,7 +11,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: 'SagerNet/sing-box'
-          ref: 'v1.9.3'   # 使用极其稳定的旧版本
+          ref: 'v1.9.3'
           fetch-depth: 1
 
       - name: Setup Go
@@ -27,8 +27,14 @@ jobs:
 
       - name: Build Android AAR
         run: |
-          # 核心修复：帮官方愚蠢的代码找到 NDK 路径！
-          export ANDROID_NDK_HOME=$ANDROID_NDK_LATEST_HOME
+          # 1. 自动扫描服务器硬盘，强行找出隐藏的 NDK 目录并应用！
+          export ANDROID_NDK_HOME=$(ls -d /usr/local/lib/android/sdk/ndk/* | tail -1)
+          echo "强行注入 NDK 路径：$ANDROID_NDK_HOME"
+          
+          # 2. 将编译工具加入环境变量，防止找不到命令
+          export PATH="$PATH:$(go env GOPATH)/bin"
+          
+          # 3. 开始官方编译流程
           make lib_install
           make lib_android
 
