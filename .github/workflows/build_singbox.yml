@@ -11,7 +11,6 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: 'SagerNet/sing-box'
-          ref: 'testing'
           fetch-depth: 1
 
       - name: Setup Go
@@ -25,17 +24,13 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      - name: Install gomobile
-        run: |
-          go install golang.org/x/mobile/cmd/gomobile@latest
-          gomobile init
-
       - name: Build Android AAR
         run: |
-          gomobile bind -v -androidapi 21 -javapkg=com.sagernet -libname=box -tags=with_utls,with_clash_api -target=android ./cmd/sing-box
+          make lib_install
+          make lib_android
 
       - name: Upload AAR Artifact
         uses: actions/upload-artifact@v4
         with:
           name: libbox-aar
-          path: ./box.aar
+          path: ./*.aar
